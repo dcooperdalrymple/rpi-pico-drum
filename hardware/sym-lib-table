@@ -1,0 +1,6 @@
+(sym_lib_table
+  (lib (name "KY-040")(type "Legacy")(uri "${KIPRJMOD}/lib/ky-040/YEUTTERG_Generic.lib")(options "")(descr ""))
+  (lib (name "RPi Pico")(type "Legacy")(uri "${KIPRJMOD}/lib/rpi-pico/MCU_RaspberryPi_and_Boards.lib")(options "")(descr ""))
+  (lib (name "SSD1306")(type "Legacy")(uri "${KIPRJMOD}/lib/ssd1306/SSD1306-128x64_OLED.lib")(options "")(descr ""))
+  (lib (name "Adafruit")(type "Legacy")(uri "${KIPRJMOD}/lib/adafruit/adafruit.lib")(options "")(descr ""))
+)

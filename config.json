@@ -1,0 +1,62 @@
+{
+    "version": 1,
+    "midi": {
+        "channel": 10,
+        "thru": false
+    },
+    "audio": {
+        "bufferSize": 256,
+        "rate": 44100,
+        "channels": 1,
+        "bits": 16,
+        "output": "pwm"
+    },
+    "patches": [
+        {
+            "name": "Default",
+            "program": 0,
+            "samples": [
+                {
+                    "file": "default/kick.wav",
+                    "name": "Kick",
+                    "note": 36,
+                    "level": 1.0,
+                    "minLevel": 0.5,
+                    "pan": 0.5,
+                    "loop": false,
+                    "noteOff": false
+                },
+                {
+                    "file": "default/snare.wav",
+                    "name": "Snare",
+                    "note": 38,
+                    "level": 1.0,
+                    "minLevel": 0.5,
+                    "pan": 0.5,
+                    "loop": false,
+                    "noteOff": false
+                },
+                {
+                    "file": "default/hihat.wav",
+                    "name": "HiHat",
+                    "note": 42,
+                    "level": 0.7,
+                    "minLevel": 0.2,
+                    "pan": 0.25,
+                    "loop": false,
+                    "noteOff": false
+                },
+                {
+                    "file": "default/cymbal.wav",
+                    "name": "Cymbal",
+                    "note": 49,
+                    "level": 0.8,
+                    "minLevel": 0.1,
+                    "pan": 1.0,
+                    "loop": false,
+                    "noteOff": false
+                }
+            ]
+        }
+    ]
+}
