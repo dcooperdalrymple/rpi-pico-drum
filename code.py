@@ -4,21 +4,29 @@
 # Version 0.1.0
 
 import sys
+import os
 import time
 import board
+
+import json
+import sdcardio
+import storage
+
 from digitalio import DigitalInOut
 from digitalio import Direction
-import audiocore
+
+from audiocore import RawSample
+from audiocore import WaveFile
 import audiomixer
 from audiopwmio import PWMAudioOut
-import json
+
 import busio
 import adafruit_midi
 from adafruit_midi.note_on import NoteOn
 from adafruit_midi.note_off import NoteOff
 from adafruit_midi.program_change import ProgramChange
 
-MAX_SAMPLES       = 8
+MAX_SAMPLES       = 16
 
 MIDI_CHANNEL      = 10
 MIDI_THRU         = False
@@ -30,6 +38,8 @@ AUDIO_BITS        = 16
 AUDIO_OUTPUT      = "pwm"
 
 CONFIG            = "config.json"
+SD_MOUNT          = "/sd"
+SD_CONFIG         = "config.json"
 
 # Initialize status LED
 led = DigitalInOut(board.LED)
@@ -75,7 +85,7 @@ class Sample:
         self.stopNoteOff = data["noteOff"] if data["noteOff"] else False
 
         self.file = open(data["file"], "rb");
-        self.wave = audiocore.WaveFile(self.file)
+        self.wave = WaveFile(self.file)
 
     def noteOn(self, velocity=1.0):
         if not self.wave:
@@ -140,14 +150,44 @@ class Patch:
         return False
 
 class Config:
-    def __init__(self, file):
-        self.file = open(file, "r")
-        self.data = json.loads(self.file.read())
+    def __init__(self, file=None):
+        self.data = dict()
+        if file != None:
+            self.readFile(file)
 
-    def deinit(self):
-        if self.file:
-            self.file.close()
-        self.file = None
+    def mergeData(self, data, target=None):
+        if target == None:
+            target = self.data
+        for key, value in data.items():
+            if isinstance(value, dict):
+                if not key in target:
+                    target[key] = dict()
+                target[key] = self.mergeData(value, target[key])
+            elif isinstance(value, list):
+                if not key in target:
+                    target[key] = []
+                target[key].extend(value)
+            else:
+                target[key] = value
+        return target
+
+    def readFile(self, filename, file_prefix=""):
+        file = open(filename, "r")
+        data = json.loads(file.read())
+
+        # Filename prefix
+        if len(file_prefix) > 0 and "patches" in data and len(data["patches"]) > 0:
+            for i, patch in enumerate(data["patches"]):
+                if "samples" in patch and len(patch["samples"]) > 0:
+                    for j, sample in enumerate(patch["samples"]):
+                        if "file" in sample and len(sample["file"]) > 0:
+                            data["patches"][i]["samples"][j]["file"] = file_prefix + sample["file"]
+
+        self.mergeData(data)
+
+        data = None
+        file.close()
+        file = None
 
     def getData(self, default, group, key=None):
         if not group in self.data or (key != None and not key in self.data[group]):
@@ -184,11 +224,24 @@ class Config:
     def getMidiThru(self):
         return self.getData(MIDI_THRU, "midi", "thru")
 
-print(":: Reading Configuration ::")
+print(":: Reading Flash Memory ::")
 config = Config(CONFIG)
-if not config.getPatch(0):
-    print("No config file found. Please see repository for config.json format.")
-    sys.exit()
+
+print(":: Reading SD Card ::")
+spi = busio.SPI(board.GP10, board.GP11, board.GP8)
+try:
+    sd = sdcardio.SDCard(spi, board.GP9)
+    vfs = storage.VfsFat(sd)
+    storage.mount(vfs, SD_MOUNT)
+    config.readFile(SD_MOUNT + "/" + SD_CONFIG, SD_MOUNT + "/")
+
+    if not "patches" in config.data or len(config.data["patches"]) == 0:
+        print("No patches or samples provided. Please see repository for config format.")
+        sys.exit()
+except:
+    print("No SD card detected or invalid file system format. SD card must be formatted as FAT32.")
+
+print("Patches:", len(config.data["patches"]))
 
 print(":: Initializing Audio ::")
 
@@ -222,8 +275,8 @@ print("Output:", config.getAudioOutput())
 
 print(":: Initializing Midi ::")
 uart = busio.UART(
-    tx=board.GP0,
-    rx=board.GP1,
+    tx=board.GP4,
+    rx=board.GP5,
     baudrate=31250,
     timeout=0.001
 )

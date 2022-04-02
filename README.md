@@ -5,7 +5,7 @@ MIDI Drum Machine using the RP2040 &amp; CircuitPython.
 
 * Maximum 8 samples per patch, can play simultaneously
 * Multiple supported audio sample rates. Ie: 22050, 44100
-* Uses built-in flash memory of Pico. 2MB maximum sample storage.
+* Uses built-in flash memory of Pico and supports external SD card for configuration and sample storage.
 * Hardware midi uart with thru support.
 * Velocity sensitivity, pan, loop, etc defined per sample in JSON configuration file.
 * I2S or PWM audio hardware options.
