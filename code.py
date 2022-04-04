@@ -5,6 +5,7 @@
 
 import sys
 import os
+import gc
 import time
 import board
 
@@ -58,10 +59,6 @@ class Sample:
     def __init__(self, index):
         self.index = index
 
-        self.data = None
-        self.file = None
-        self.wave = None
-
         self.note = 0
         self.level = 1.0
         self.minLevel = 0.0
@@ -73,7 +70,9 @@ class Sample:
         if not "file" in data:
             return False
 
-        if self.wave:
+        print("Loading Sample:", data["file"])
+
+        if hasattr(self, "wave"):
             self.unload()
 
         self.data = data
@@ -86,6 +85,8 @@ class Sample:
 
         self.file = open(data["file"], "rb");
         self.wave = WaveFile(self.file)
+        if self.wave == False:
+            self.unload()
 
     def noteOn(self, velocity=1.0):
         if not self.wave:
@@ -105,18 +106,16 @@ class Sample:
         return True
 
     def unload(self):
-        self.stop()
+        self.noteOff()
         if self.wave:
             self.wave.deinit()
-        self.wave = None
-        if self.file:
-            self.file.close()
-        self.file = None
-        self.data = None
+            del self.wave
+        if self.data:
+            del self.data
+        gc.collect()
 
 class Patch:
     def __init__(self):
-        self.data = None
         self.samples = [None for i in range(MAX_SAMPLES)]
         for i in range(MAX_SAMPLES):
             self.samples[i] = Sample(i)
@@ -125,7 +124,7 @@ class Patch:
         if not "samples" in data:
             return False
 
-        if self.data:
+        if hasattr(self, "data"):
             self.unload()
         self.data = data
 
@@ -135,7 +134,9 @@ class Patch:
     def unload(self):
         for i in range(MAX_SAMPLES):
             self.samples[i].unload()
-        self.data = None
+        if self.data:
+            del self.data
+        gc.collect()
 
     def noteOn(self, note, velocity):
         for i in range(min(MAX_SAMPLES, len(self.data["samples"]))):
@@ -185,9 +186,10 @@ class Config:
 
         self.mergeData(data)
 
-        data = None
+        del data
         file.close()
-        file = None
+        del file
+        gc.collect()
 
     def getData(self, default, group, key=None):
         if not group in self.data or (key != None and not key in self.data[group]):
