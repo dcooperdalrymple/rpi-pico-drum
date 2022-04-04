@@ -33,7 +33,7 @@ MIDI_THRU         = False
 
 AUDIO_BUFFER_SIZE = 1024
 AUDIO_RATE        = 22050
-AUDIO_CHANNELS    = 1
+AUDIO_CHANNELS    = 2
 AUDIO_BITS        = 16
 AUDIO_OUTPUT      = "pwm"
 
@@ -212,10 +212,6 @@ class Config:
         return self.getData(AUDIO_BUFFER_SIZE, "audio", "bufferSize")
     def getAudioRate(self):
         return self.getData(AUDIO_RATE, "audio", "rate")
-    def getAudioChannels(self):
-        return self.getData(AUDIO_CHANNELS, "audio", "channels")
-    def getAudioBits(self):
-        return self.getData(AUDIO_BITS, "audio", "bits")
     def getAudioOutput(self):
         return self.getData(AUDIO_OUTPUT, "audio", "output")
 
@@ -249,8 +245,8 @@ mixer = audiomixer.Mixer(
     voice_count=MAX_SAMPLES,
     buffer_size=config.getAudioBufferSize(),
     sample_rate=config.getAudioRate(),
-    channel_count=config.getAudioChannels(),
-    bits_per_sample=config.getAudioBits(),
+    channel_count=AUDIO_CHANNELS,
+    bits_per_sample=AUDIO_BITS,
     samples_signed=True
 )
 
@@ -269,8 +265,8 @@ audio.play(mixer)
 
 print("Buffer Size:", config.getAudioBufferSize())
 print("Sample Rate:", config.getAudioRate())
-print("Channels:", config.getAudioChannels())
-print("Bits:", config.getAudioBits())
+print("Channels:", AUDIO_CHANNELS)
+print("Bits:", AUDIO_BITS)
 print("Output:", config.getAudioOutput())
 
 print(":: Initializing Midi ::")
