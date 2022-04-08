@@ -15,7 +15,7 @@
             "program": 0,
             "samples": [
                 {
-                    "file": "default/kick.wav",
+                    "file": "samples/kick.wav",
                     "name": "Kick",
                     "note": 36,
                     "level": 1.0,
@@ -25,7 +25,7 @@
                     "noteOff": false
                 },
                 {
-                    "file": "default/snare.wav",
+                    "file": "samples/snare.wav",
                     "name": "Snare",
                     "note": 38,
                     "level": 1.0,
@@ -35,7 +35,7 @@
                     "noteOff": false
                 },
                 {
-                    "file": "default/hihat.wav",
+                    "file": "samples/hihat.wav",
                     "name": "HiHat",
                     "note": 42,
                     "level": 0.7,
@@ -45,7 +45,7 @@
                     "noteOff": false
                 },
                 {
-                    "file": "default/cymbal.wav",
+                    "file": "samples/cymbal.wav",
                     "name": "Cymbal",
                     "note": 49,
                     "level": 0.8,
