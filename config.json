@@ -20,7 +20,7 @@
                     "note": 36,
                     "level": 1.0,
                     "minLevel": 0.5,
-                    "pan": 0.5,
+                    "pan": 0.0,
                     "loop": false,
                     "noteOff": false
                 },
@@ -30,7 +30,7 @@
                     "note": 38,
                     "level": 1.0,
                     "minLevel": 0.5,
-                    "pan": 0.5,
+                    "pan": 0.0,
                     "loop": false,
                     "noteOff": false
                 },
@@ -40,7 +40,7 @@
                     "note": 42,
                     "level": 0.7,
                     "minLevel": 0.2,
-                    "pan": 0.25,
+                    "pan": -0.5,
                     "loop": false,
                     "noteOff": false
                 },

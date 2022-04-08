@@ -16,7 +16,6 @@ import storage
 from digitalio import DigitalInOut
 from digitalio import Direction
 
-from audiocore import RawSample
 from audiocore import WaveFile
 import audiomixer
 from audiopwmio import PWMAudioOut
@@ -62,7 +61,7 @@ class Sample:
         self.note = 0
         self.level = 1.0
         self.minLevel = 0.0
-        self.pan = 0.5
+        self.pan = 0.0
         self.loop = False
         self.stopNoteOff = False
 
@@ -79,7 +78,7 @@ class Sample:
         self.note = data["note"] if data["note"] else 0
         self.level = data["level"] if data["level"] else 1.0
         self.minLevel = data["minLevel"] if data["minLevel"] else 0.0
-        self.pan = data["pan"] if data["pan"] else 0.5
+        self.pan = data["pan"] if data["pan"] else 0.0
         self.loop = data["loop"] if data["loop"] else False
         self.stopNoteOff = data["noteOff"] if data["noteOff"] else False
 
@@ -96,6 +95,7 @@ class Sample:
         else:
             mixer.voice[self.index].play(self.wave, loop=self.loop)
             mixer.voice[self.index].level = velocity * (self.level - self.minLevel) + self.minLevel
+            mixer.voice[self.index].pan = self.pan
         return True
 
     def noteOff(self):
@@ -103,6 +103,7 @@ class Sample:
             if mixer.voice[self.index].playing:
                 mixer.voice[self.index].stop()
             mixer.voice[self.index].level = 0.0
+            mixer.voice[self.index].pan = 0.0
         return True
 
     def unload(self):
@@ -110,6 +111,9 @@ class Sample:
         if self.wave:
             self.wave.deinit()
             del self.wave
+        if self.file:
+            self.file.close()
+            del self.file
         if self.data:
             del self.data
         gc.collect()
