@@ -47,6 +47,7 @@ AUDIO_RATE        = 22050
 AUDIO_CHANNELS    = 2
 AUDIO_BITS        = 16
 AUDIO_OUTPUT      = "i2s" # "pwm" or "i2s"
+AUDIO_VOLUME      = 1.0
 
 CONFIG            = "config.json"
 SD_MOUNT          = "/sd"
@@ -210,12 +211,13 @@ class Sample:
         if velocity <= 0.0:
             self.noteOff()
         else:
+            self.stop()
             for i in range(MAX_VOICES):
                 if mixer.voice[i].playing:
                     continue
                 self.voice = i
                 mixer.voice[i].play(self.wave, loop=self.loop)
-                mixer.voice[i].level = min(1.0, max(0.0, velocity * (self.level - self.minLevel) + self.minLevel))
+                mixer.voice[i].level = min(1.0, max(0.0, velocity * (self.level - self.minLevel) + self.minLevel) * config.getAudioVolume())
                 mixer.voice[i].pan = max(-1.0, min(1.0, self.pan))
                 return True
         return False
@@ -389,6 +391,13 @@ class Config:
         return self.getData(AUDIO_RATE, "audio", "rate")
     def getAudioOutput(self):
         return self.getData(AUDIO_OUTPUT, "audio", "output")
+
+    def getAudioVolume(self):
+        return self.getData(AUDIO_VOLUME, "audio", "volume")
+    def setAudioVolume(self, value):
+        if value < 0 or value > 1:
+            return False
+        return self.setData("audio", "volume", value)
 
     def getMidiChannel(self):
         return self.getData(MIDI_CHANNEL, "midi", "channel")
