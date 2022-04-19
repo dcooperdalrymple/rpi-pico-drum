@@ -1,7 +1,13 @@
-# Raspberry Pi Pico (RP2040) MIDI Drum Machine
-# 2022 DCooper Dalrymple - me@dcdalrymple.com
-# GPL v2 License
-# Version 0.1.0
+"""
+RPi Pico Drum Machine
+2022 D Cooper Dalrymple - me@dcdalrymple.com
+GPL v2 License
+
+File: code.py
+Title: Main Script
+Version: 0.1.0
+Since: 0.1.0
+"""
 
 import sys
 import os
@@ -19,10 +25,7 @@ from rotaryio import IncrementalEncoder
 
 from adafruit_neotrellis.neotrellis import NeoTrellis
 
-import displayio
-import adafruit_displayio_ssd1306
-import terminalio
-from adafruit_display_text import label
+import menu
 
 from audiocore import WaveFile
 import audiomixer
@@ -105,7 +108,7 @@ led = DigitalInOut(board.LED)
 led.direction = Direction.OUTPUT
 led.value = True
 
-# Initialize Controls (I2C, NeoTrellis, Display, & Rotary)
+# Initialize NeoTrellis I2C RGB 4x4 Button Pad
 trellis_i2c = I2C(scl=board.GP19, sda=board.GP18)
 trellis = NeoTrellis(trellis_i2c)
 trellis_buffer = [COLOR_OFF for i in range(MAX_PAD)]
@@ -113,50 +116,34 @@ for i in range(MAX_PAD):
     trellis.pixels[i] = trellis_buffer[i]
     time.sleep(0.05)
 
-displayio.release_displays()
+# Initialize Menu Display and Encoder
+menu.release_displays()
 display_i2c = I2C(scl=board.GP21, sda=board.GP20)
-display_bus = displayio.I2CDisplay(display_i2c, device_address=DISPLAY_ADDRESS)
-display = adafruit_displayio_ssd1306.SSD1306(display_bus, width=DISPLAY_WIDTH, height=DISPLAY_HEIGHT)
+display_menu = menu.Menu(
+    i2c=display_i2c,
+    encoder_pin_a=board.GP12,
+    encoder_pin_b=board.GP13,
+    button_pin=board.GP7,
+    address=DISPLAY_ADDRESS,
+    width=DISPLAY_WIDTH,
+    height=DISPLAY_HEIGHT
+)
 
-menu_encoder = IncrementalEncoder(board.GP12, board.GP13)
-menu_button = DigitalInOut(board.GP7)
-menu_button.direction = Direction.INPUT
-menu_button.pull = Pull.UP
-
+# Initialize SFX Mod Encoder
 mod_encoder = IncrementalEncoder(board.GP26, board.GP27)
 mod_button = DigitalInOut(board.GP28)
 mod_button.direction = Direction.INPUT
 mod_button.pull = Pull.UP
 
+# Initialization Screen
+display_menu.splash_image()
+display_menu.splash_message("Version 0.1.0")
+
 # Wait for USB to stabilize
 time.sleep(0.5)
 
 # Serial Header
-print("RPi Pico Drum")
-print("Version 0.1.0")
-print("Cooper Dalrymple, 2022")
-print("https://dcdalrymple.com/rpi-pico-drum/")
-
-# Initialization Screen
-splash = displayio.Group()
-display.show(splash)
-
-color_bitmap = displayio.Bitmap(DISPLAY_WIDTH, DISPLAY_HEIGHT, 1)
-color_palette = displayio.Palette(1)
-color_palette[0] = 0xFFFFFF # Black
-
-bg_sprite = displayio.TileGrid(color_bitmap, pixel_shader=color_palette, x=0, y=0)
-splash.append(bg_sprite)
-
-inner_bitmap = displayio.Bitmap(DISPLAY_WIDTH - 10, DISPLAY_HEIGHT - 8, 1)
-inner_palette = displayio.Palette(1)
-inner_palette[0] = 0x000000  # Black
-inner_sprite = displayio.TileGrid(inner_bitmap, pixel_shader=inner_palette, x=5, y=4)
-splash.append(inner_sprite)
-
-text = "Hello World!"
-text_area = label.Label(terminalio.FONT, text=text, color=0xFFFFFF, x=28, y=(DISPLAY_HEIGHT>>1)-1)
-splash.append(text_area)
+print("RPi Pico Drum Machine\nVersion 0.1.0\nCooper Dalrymple, 2022\nhttps://dcdalrymple.com/rpi-pico-drum/")
 
 # Class Definitions
 
@@ -268,7 +255,7 @@ class Patch:
         for i in range(MAX_PAD):
             sample = self.getPad(i)
             if sample:
-                setTrellisBuffer(i, tuple(c>>1 for c in sample.color), True)
+                setTrellisBuffer(i, tuple(int(c/2) for c in sample.color), True)
             else:
                 setTrellisBuffer(i, COLOR_OFF, True)
 
@@ -373,11 +360,28 @@ class Config:
             return self.data[group][key]
         else:
             return self.data[group]
+    def setData(self, group, key, value):
+        if not group in self.data or not key in self.data[group]:
+            return False
+        self.data[group][key] = value
+        return True
 
     def getPatch(self, index):
         if not "patches" in self.data or index >= len(self.data["patches"]):
             return False
         return self.data["patches"][index]
+    def getSelectorItems(self):
+        items = list()
+
+        if not "patches" in self.data or len(self.data["patches"]) == 0:
+            return items
+
+        for i in range(len(self.data["patches"])):
+            if "name" in self.data["patches"][i]:
+                items.append(self.data["patches"][i]["name"])
+            else:
+                items.append(str(i))
+        return items
 
     def getProgram(self, num):
         for i in range(len(self.data["patches"])):
@@ -401,8 +405,17 @@ class Config:
 
     def getMidiChannel(self):
         return self.getData(MIDI_CHANNEL, "midi", "channel")
+    def setMidiChannel(self, value):
+        if type(value) != type(1) or value < 1 or value > 16:
+            return False
+        return self.setData("midi", "channel", value)
+
     def getMidiThru(self):
         return self.getData(MIDI_THRU, "midi", "thru")
+    def setMidiThru(self, value):
+        if type(value) != type(True):
+            return False
+        return self.setData("midi", "thru", value)
 
 def handleTrellis(event):
     if event.edge == NeoTrellis.EDGE_RISING:
@@ -418,6 +431,7 @@ def setTrellisBuffer(pad, color, set=False):
     if set:
         trellis.pixels[pad] = trellis_buffer[pad]
 
+display_menu.splash_message("Reading Flash Memory")
 print(":: Reading Flash Memory ::")
 config = Config()
 try:
@@ -425,6 +439,7 @@ try:
 except:
     print("No internal config file detected.")
 
+display_menu.splash_message("Reading SD Card")
 print(":: Reading SD Card ::")
 spi = SPI(board.GP10, board.GP11, board.GP8)
 try:
@@ -434,6 +449,7 @@ try:
     config.readFile(SD_MOUNT + "/" + SD_CONFIG, SD_MOUNT + "/")
 
     if not "patches" in config.data or len(config.data["patches"]) == 0:
+        display_menu.splash_message("No Patches Found")
         print("No patches or samples provided. Please see repository for config format.")
         sys.exit()
 except:
@@ -441,6 +457,7 @@ except:
 
 print("Patches:", len(config.data["patches"]))
 
+display_menu.splash_message("Initializing Audio")
 print(":: Initializing Audio ::")
 
 mixer = audiomixer.Mixer(
@@ -461,6 +478,7 @@ if config.getAudioOutput() == "pwm":
 elif config.getAudioOutput() == "i2s":
     audio = I2SOut(board.GP2, board.GP3, board.GP6)
 if audio == None:
+    display_menu.splash_message("Invalid Audio Output")
     print("Invalid audio output type. Please see repository for valid output types.")
     sys.exit()
 audio.play(mixer)
@@ -471,6 +489,7 @@ print("Channels:", AUDIO_CHANNELS)
 print("Bits:", AUDIO_BITS)
 print("Output:", config.getAudioOutput())
 
+display_menu.splash_message("Initializing Midi")
 print(":: Initializing Midi ::")
 uart = UART(
     tx=board.GP4,
@@ -487,6 +506,7 @@ midi = adafruit_midi.MIDI(
 )
 print("Channel:", midi.in_channel+1)
 
+display_menu.splash_message("Initializing Interface")
 print(":: Initializing Interface ::")
 
 print("Activating NeoTrellis Keys")
@@ -500,15 +520,44 @@ for i in range(MAX_PAD):
     trellis.pixels[i] = COLOR_OFF
     time.sleep(0.05)
 
+display_menu.splash_message("Loading Default")
 print(":: Loading Default Patch ::")
 patch = Patch()
 patch.load(config.getPatch(0))
 
+display_menu.splash_message("Initialization Complete")
 print(":: Initialization Complete ::")
 led.value = False
 
+# Setup Display Menu
+def menu_update(item):
+    if item.get_key() == "patch":
+        current_patch = config.getPatch(item.get())
+        patch.load(current_patch)
+        print("Patch:", current_patch["name"])
+    elif item.get_key() == "volume":
+        config.setAudioVolume(item.get() / 100.0)
+    elif item.get_key() == "midi_channel":
+        config.setMidiChannel(item.get())
+        midi.in_channel = config.getMidiChannel()-1
+        midi.out_channel = config.getMidiChannel()-1
+        print("Midi Channel:", config.getMidiChannel())
+    elif item.get_key() == "midi_thru":
+        config.setMidiThru(item.get())
+        print("Midi Thru:", config.getMidiThru())
+
+display_menu.setup(menu_update)
+patch_item = display_menu.find_item("patch")
+if patch_item != None:
+    patch_item.set_items(config.getSelectorItems())
+    display_menu.draw()
+
 while True:
-    trellis.sync() # trigger callbacks
+    # trigger callbacks
+    trellis.sync()
+
+    # Update menu
+    display_menu.update()
 
     while True:
         msg_in = midi.receive()
@@ -539,11 +588,11 @@ while True:
         if mixer.voice[sample.voice].playing:
             setTrellisBuffer(i, sample.color)
         else:
-            setTrellisBuffer(i, tuple(c>>1 for c in sample.color))
+            setTrellisBuffer(i, tuple(int(c/2) for c in sample.color))
             sample.stop()
 
     time.sleep(0.02)
 
 print("\n:: Program Shutting Down ::")
-menu_encoder.deinit()
+display_menu.deinit()
 mod_encoder.deinit()
