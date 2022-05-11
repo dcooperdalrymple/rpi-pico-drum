@@ -1,5 +1,5 @@
 # rpi-pico-drum
-MIDI Drum Machine using the RP2040 &amp; CircuitPython.
+MIDI Drum Machine using the RP2040.
 
 ## Specifications
 
@@ -13,16 +13,16 @@ MIDI Drum Machine using the RP2040 &amp; CircuitPython.
 
 ## Installation
 
-1. Download and install CircuitPython bootloader: [instructions & UF2 file](https://circuitpython.org/board/raspberry_pi_pico/).
-1. Add adafruit_midi library to `/lib/adafruit_midi` in CircuitPython storage: [GitHub Repository](https://github.com/adafruit/Adafruit_CircuitPython_MIDI).
-1. Copy `code.py`, `config.json`, and `default` folder of samples into root directory of CircuitPython storage.
-1. Connect your midi device configured for channel 10 and give it a shot!
+1. Configure: `cmake -B build -S .`
+2. Compile/Build: `make -C build`
+3. Write: Hold BOOTSEL button on Pico, plug it in via USB, and release BOOTSEL. Copy and paste `rpi-pico-drum.uf2` into RPI-RP2 drive.
+4. Format your MicroSD card as FAT32 and copy `config.json` into the root directory.
 
 ## Configuration
 
 ### Sample Wave Files
 
-Samples can be stored wherever you'd like within the Pico's storage, but it's generally recommended to keep your patches within individual folders which contain all the samples for that patch.
+Samples can be stored wherever you'd like within your MicroSD flash storage (formatted as FAT32), but it's generally recommended to keep your patches within individual folders which contain all the samples for that patch.
 
 In order to convert your samples into the appropriate format, use the following command:
 
@@ -32,14 +32,14 @@ With the default settings, this would look something like `sox kick.wav -b 16 -c
 
 ### JSON Config
 
-All of the settings of the device and samples/patches are configured using the config.json file stored in the root directory of CircuitPython. If you're not familiar with JSON, it's structure can be very strict and cause errors if it's not formatted properly. I recommending reading up on it [here](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON).
+All of the settings of the device and samples/patches are configured using the config.json file stored in the root directory of your MicroSD card. If you're not familiar with JSON, it's structure can be very strict and cause errors if it's not formatted properly. I recommending reading up on it [here](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON).
 
 The first patch located in the `"patches"` array is loaded by default when the Pico boots up. You can add more patches here following the same format as the "Default" patch which will be loaded sequentially.
 
 * The `"program"` setting is used for incoming Midi Program Change messages.
 * The `"note"` settings for each sample in the `"samples"` array are used for incoming Midi Note messages to trigger each sample.
 
-## Notes
+## Planned Features
 
-* Panning is not currently supported but will be coming very soon. You can ignore sample pan settings for now.
-* Pitch shifting and note ranges is not currently supported but may come in a future release.
+* Real-time effects including LPF, HPF, BPF, reverb, phase, chorus, bit-crush, etc.
+* Pitch shifting and note ranges.
