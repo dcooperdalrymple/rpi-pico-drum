@@ -472,11 +472,11 @@ mixer = audiomixer.Mixer(
 audio = None
 if config.getAudioOutput() == "pwm":
     audio = PWMAudioOut(
-        left_channel=board.GP26,
-        right_channel=board.GP27
+        left_channel=board.GP16,
+        right_channel=board.GP17
     )
 elif config.getAudioOutput() == "i2s":
-    audio = I2SOut(board.GP2, board.GP3, board.GP6)
+    audio = I2SOut(board.GP0, board.GP1, board.GP2)
 if audio == None:
     display_menu.splash_message("Invalid Audio Output")
     print("Invalid audio output type. Please see repository for valid output types.")

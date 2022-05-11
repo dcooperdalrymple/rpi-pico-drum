@@ -45,7 +45,7 @@ if AUDIO_OUTPUT == "pwm":
         right_channel=board.GP27
     )
 elif AUDIO_OUTPUT == "i2s":
-    audio = I2SOut(board.GP2, board.GP3, board.GP6)
+    audio = I2SOut(board.GP0, board.GP1, board.GP2)
 else:
     print("Invalid Audio Output Type:", AUDIO_OUTPUT)
     sys.exit()
