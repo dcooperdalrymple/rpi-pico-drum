@@ -28,7 +28,7 @@ add_executable(${NAME}
     src/mixer.cpp
     main.cpp
 )
-add_subdirectory(./lib/pico-ss-oled)
+add_subdirectory(./lib/pi-pico-ss-oled/pico-ss-oled)
 
 pico_generate_pio_header(${NAME} ${CMAKE_CURRENT_LIST_DIR}/src/rotary.pio)
 
