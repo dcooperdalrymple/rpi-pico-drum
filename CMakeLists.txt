@@ -17,11 +17,15 @@ pico_sdk_init()
 # rest of your project
 project(${NAME} C CXX ASM)
 
+include_directories(./include)
 add_executable(${NAME}
     src/config.cpp
     src/display.cpp
     src/rotary.cpp
     src/coretalk.cpp
+    src/audio.cpp
+    src/sample.cpp
+    src/mixer.cpp
     main.cpp
 )
 add_subdirectory(./lib/pico-ss-oled)

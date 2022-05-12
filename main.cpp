@@ -19,12 +19,12 @@
 
 #include "ss_oled.hpp"
 
-#include "src/hw_config.h"
+#include "hw_config.h"
 
-#include "src/config.hpp"
-#include "src/display.hpp"
-#include "src/rotary.hpp"
-#include "src/coretalk.hpp"
+#include "config.hpp"
+#include "display.hpp"
+#include "rotary.hpp"
+#include "coretalk.hpp"
 
 static CoreTalk coretalk;
 
