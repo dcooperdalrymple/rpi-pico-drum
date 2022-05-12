@@ -17,6 +17,7 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 
+#include "neotrellis.hpp"
 #include "ss_oled.hpp"
 
 #include "hw_config.h"
@@ -30,6 +31,7 @@ static CoreTalk coretalk;
 
 // Secondary Core (display/rotary)
 
+static NeoTrellis trellis(TRELLIS_I2C, TRELLIS_SDA, TRELLIS_SCL);
 static Display display;
 static Rotary menu_rotary(MENU_CLK, MENU_SW);
 static Rotary mod_rotary(MOD_CLK, MOD_SW);
@@ -78,6 +80,14 @@ void interface_mod_rotary_handler(uint8_t event) {
     }
 }
 
+void interface_keypad_handler(uint8_t key, Keypad::Edge edge) {
+    if (edge == Keypad::Edge::RISING) {
+
+    } else {
+
+    }
+}
+
 void interface_core_handler(uint32_t event, uint32_t value) {
     switch (event) {
         case CORE_POKE:
@@ -88,13 +98,45 @@ void interface_core_handler(uint32_t event, uint32_t value) {
 }
 
 void interface_core() {
+    uint8_t i;
+
+    // Initialize LED and turn on while device is initializing
+    gpio_init(LED);
+    gpio_set_dir(LED, GPIO_OUT);
+    gpio_put(LED, 1);
+
+    // Display
+    display.init();
+    display.splash();
+
+    // NeoTrellis
+    trellis.init();
+    for (i = 0; i < 16; i++) {
+        trellis.pixels.set(i, COLOR_WHITE);
+        trellis.pixels.show();
+        sleep_ms(20);
+    }
+    for (i = 0; i < 16; i++) {
+        trellis.pixels.set(i, COLOR_BLACK);
+        trellis.pixels.show();
+        sleep_ms(20);
+    }
+
     // Blocking handshake with core0
     if (!coretalk.handshake()) return;
+
+    display.clear();
+    gpio_put(LED, 0);
 
     coretalk.setup();
     coretalk.set_callback(&interface_core_handler);
     menu_rotary.set_callback(&interface_menu_rotary_handler);
     mod_rotary.set_callback(&interface_mod_rotary_handler);
+    trellis.keypad.set_callback(&interface_keypad_handler);
+
+    while (true) {
+        sleep_ms(1000);
+    }
 }
 
 // Main Core (Audio Processing)
@@ -111,8 +153,15 @@ void audio_core_handler(uint32_t event, uint32_t value) {
 int main() {
     stdio_init_all();
 
-    // Setup core1 and do blocking handshake
+    bi_decl(bi_program_description("RPi Pico Drum Machine"));
+    bi_decl(bi_1pin_with_name(LED, "On-board LED"));
+
+    sleep_ms(3000);
+
+    // Setup core1
     multicore_launch_core1(interface_core);
+
+    // Wait for core1 to finish initialization
     if (!coretalk.handshake()) return 1;
 
     coretalk.setup();
@@ -121,6 +170,7 @@ int main() {
     absolute_time_t now_timestamp = nil_time;
     while (1) {
         now_timestamp = get_absolute_time();
+        sleep_ms(1000);
     }
 
     return 0;
