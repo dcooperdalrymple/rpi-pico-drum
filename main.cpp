@@ -1,3 +1,15 @@
+/**
+ * RPi Pico Drum Machine
+ * 2022 D Cooper Dalrymple - me@dcdalrymple.com
+ * GPL v3 License
+ *
+ * Package: rpi-pico-drum
+ * File: main.cpp
+ * Title: Main
+ * Version: 0.2.0
+ * Since: 0.2.0
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

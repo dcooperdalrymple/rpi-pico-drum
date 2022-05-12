@@ -1,3 +1,11 @@
+/**
+ * Package: rpi-pico-drum
+ * File: rotary.cpp
+ * Title: Rotary Encoders with PIO
+ * Version: 0.2.0
+ * Since: 0.2.0
+ */
+
 #include "rotary.hpp"
 
 int Rotary::pin_clk = -1;

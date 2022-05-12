@@ -1,3 +1,11 @@
+/**
+ * Package: rpi-pico-drum
+ * File: coretalk.hpp
+ * Title: Multi-core Communication
+ * Version: 0.2.0
+ * Since: 0.2.0
+ */
+
 #pragma once
 #include "pico/multicore.h"
 #include "hardware/irq.h"

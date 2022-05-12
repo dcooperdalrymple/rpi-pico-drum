@@ -1,3 +1,11 @@
+/**
+ * Package: rpi-pico-drum
+ * File: rotary.hpp
+ * Title: Rotary Encoders with PIO
+ * Version: 0.2.0
+ * Since: 0.2.0
+ */
+
 #pragma once
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
