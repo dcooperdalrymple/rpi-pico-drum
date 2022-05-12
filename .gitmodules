@@ -1,3 +1,6 @@
 [submodule "lib/pi-pico-ss-oled"]
 	path = lib/pi-pico-ss-oled
 	url = https://github.com/martinkooij/pi-pico-ss-oled.git
+[submodule "lib/pico-neotrellis"]
+	path = lib/pico-neotrellis
+	url = https://github.com/dcooperdalrymple/pico-neotrellis.git
