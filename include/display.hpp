@@ -14,6 +14,8 @@
 #include "ss_oled.hpp"
 #include "hw_config.h"
 
+#include "splash_img.h"
+
 #define OLED_WIDTH  128
 #define OLED_HEIGHT 64
 
@@ -39,12 +41,22 @@ private:
 public:
 
     Display() : oled(OLED_128x64, 0x3c, 0, 0, DISPLAY_I2C, DISPLAY_SDA, DISPLAY_SCL, I2C_SPEED) {
+
+    };
+
+    void init() {
         rc = oled.init();
         oled.set_back_buffer(ucBuffer);
         if (rc == OLED_NOT_FOUND) return;
 
         oled.fill(0x00, 1);
         wake();
+    };
+
+    void splash() {
+        if (rc == OLED_NOT_FOUND) return;
+        oled.set_back_buffer(splash_img);
+        oled.dump_buffer(NULL);
     };
 
     void dump() {
