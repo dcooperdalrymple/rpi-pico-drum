@@ -1,6 +1,6 @@
 /**
  * Package: rpi-pico-drum
- * File: hw_config.h
+ * File: hw_config.hpp
  * Title: RP2040 Hardware Assignment
  * Version: 0.2.0
  * Since: 0.2.0

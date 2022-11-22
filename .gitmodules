@@ -4,3 +4,9 @@
 [submodule "lib/pico-neotrellis"]
 	path = lib/pico-neotrellis
 	url = https://github.com/dcooperdalrymple/pico-neotrellis.git
+[submodule "lib/pico-extras"]
+	path = lib/pico-extras
+	url = https://github.com/raspberrypi/pico-extras.git
+[submodule "lib/picojson"]
+	path = lib/picojson
+	url = https://github.com/kazuho/picojson.git

@@ -6,5 +6,6 @@
  */
 
 #pragma once
+#include "picojson.h"
 
 #define CONFIG_FILE "/config.json"

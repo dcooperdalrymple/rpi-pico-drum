@@ -12,7 +12,7 @@
 #include "pico/stdlib.h"
 #include "pico/double.h"
 #include "ss_oled.hpp"
-#include "hw_config.h"
+#include "hw_config.hpp"
 
 #include "splash_img.h"
 
@@ -56,6 +56,14 @@ public:
     void splash() {
         if (rc == OLED_NOT_FOUND) return;
         oled.set_back_buffer(splash_img);
+        oled.dump_buffer(NULL);
+    };
+    void splash_message(char *msg) {
+        if (rc == OLED_NOT_FOUND) return;
+        oled.set_cursor(0, 0);
+        oled.set_textWrap(true);
+        oled.draw_rectangle(0, 0, OLED_WIDTH-1, 8, 0, 1);
+        oled.write_string(0, -1, -1, msg, FONT_6x8, 0, 0);
         oled.dump_buffer(NULL);
     };
 

@@ -19,9 +19,10 @@
 
 #include "neotrellis.hpp"
 #include "ss_oled.hpp"
-
 #include "hw_config.h"
 
+#include "hw_config.hpp"
+#include "storage.hpp"
 #include "config.hpp"
 #include "display.hpp"
 #include "rotary.hpp"
@@ -31,6 +32,7 @@ static CoreTalk coretalk;
 
 // Secondary Core (display/rotary)
 
+static Storage storage(sd_get_by_num(0));
 static NeoTrellis trellis(TRELLIS_I2C, TRELLIS_SDA, TRELLIS_SCL);
 static Display display;
 static Rotary menu_rotary(MENU_CLK, MENU_SW);
@@ -42,18 +44,22 @@ void interface_menu_rotary_handler(uint8_t event) {
             if (menu_rotary.get_rotation() >= ROTARY_BOUNCE) {
                 menu_rotary.set_rotation(0);
                 // do right
+                display.splash_message((char *)"Menu Right");
             }
             break;
         case ROTARY_CCW:
             if (menu_rotary.get_rotation() <= -ROTARY_BOUNCE) {
                 menu_rotary.set_rotation(0);
                 // do left
+                display.splash_message((char *)"Menu Left");
             }
             break;
         case ROTARY_PRESS:
+            display.splash_message((char *)"Menu Press");
             break;
         case ROTARY_RELEASE:
             // do click
+            display.splash_message((char *)"Menu Release");
             break;
     }
 }
@@ -64,18 +70,22 @@ void interface_mod_rotary_handler(uint8_t event) {
             if (mod_rotary.get_rotation() >= ROTARY_BOUNCE) {
                 mod_rotary.set_rotation(0);
                 // do right
+                display.splash_message((char *)"Mod Right");
             }
             break;
         case ROTARY_CCW:
             if (mod_rotary.get_rotation() <= -ROTARY_BOUNCE) {
                 mod_rotary.set_rotation(0);
                 // do left
+                display.splash_message((char *)"Mod Left");
             }
             break;
         case ROTARY_PRESS:
+            display.splash_message((char *)"Mod Press");
             break;
         case ROTARY_RELEASE:
             // do click
+            display.splash_message((char *)"Mod Release");
             break;
     }
 }
@@ -110,6 +120,7 @@ void interface_core() {
     display.splash();
 
     // NeoTrellis
+    display.splash_message((char *)"Configuring NeoTrellis");
     trellis.init();
     for (i = 0; i < 16; i++) {
         trellis.pixels.set(i, COLOR_WHITE);
@@ -122,7 +133,15 @@ void interface_core() {
         sleep_ms(20);
     }
 
+    // SD Storage
+    display.splash_message((char *)"Initializing SD FAT storage");
+    if (!storage.init()) {
+        display.splash_message((char *)"Failed to initialize storage");
+        return;
+    }
+
     // Blocking handshake with core0
+    display.splash_message((char *)"Waiting for audio core");
     if (!coretalk.handshake()) return;
 
     display.clear();
@@ -160,6 +179,9 @@ int main() {
 
     // Setup core1
     multicore_launch_core1(interface_core);
+
+    // Initialize Audio
+    //...
 
     // Wait for core1 to finish initialization
     if (!coretalk.handshake()) return 1;
