@@ -1,3 +1,4 @@
 hardware/rpi-pico-drum-backups
+hardware/fp-info-cache
 *.bak
 *.FCStd1
