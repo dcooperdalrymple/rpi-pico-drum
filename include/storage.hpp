@@ -11,6 +11,7 @@
 #include "ff.h"
 #include "sd_card.h"
 #include "hw_config.h"
+#include "picojson.h"
 
 class Storage {
     private:
@@ -21,4 +22,5 @@ class Storage {
         bool init(void);
         void uninit(void);
 
+        bool read_json(const char* filename, picojson::value* data);
 };

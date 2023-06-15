@@ -20,3 +20,23 @@ bool Storage::init(void) {
 void Storage::uninit(void) {
     f_unmount(pSD->pcName);
 }
+
+bool Storage::read_json(const char* filename, picojson::value* data) {
+    FIL file;
+    FRESULT fr = f_open(&file, filename, FA_READ);
+    if (FR_OK != fr && FR_EXIST != fr) return false;
+
+    std::string content;
+    char buffer[256];
+    while (!f_eof(&file) && f_gets(buffer, sizeof buffer, &file)) {
+        content += buffer;
+    }
+
+    std::string err = picojson::parse(*data, content);
+    if (!err.empty()) return false;
+
+    fr = f_close(&file);
+    if (FR_OK != fr) return false;
+
+    return true;
+}

@@ -33,6 +33,7 @@ static CoreTalk coretalk;
 // Secondary Core (display/rotary)
 
 static Storage storage(sd_get_by_num(0));
+static Config config(&storage);
 static NeoTrellis trellis(TRELLIS_I2C, TRELLIS_SDA, TRELLIS_SCL);
 static Display display;
 static Rotary menu_rotary(MENU_CLK, MENU_SW);
@@ -137,6 +138,13 @@ void interface_core() {
     display.splash_message((char *)"Initializing SD FAT storage");
     if (!storage.init()) {
         display.splash_message((char *)"Failed to initialize storage");
+        return;
+    }
+
+    // Config
+    display.splash_message((char *)"Reading configuration");
+    if (!config.init()) {
+        display.splash_message((char *)"Invalid configuration data");
         return;
     }
 
